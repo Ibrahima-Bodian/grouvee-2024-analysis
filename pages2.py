@@ -5,7 +5,7 @@ import csv
 import time
 import urllib3
 
-# Désactiver les avertissements SSL (à utiliser uniquement en développement)
+# Désactiver les avertissements SSL (à utiliser uniquement en dev)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 headers = {
@@ -17,9 +17,7 @@ headers = {
 }
 
 def get_game_blocks(page_number):
-    """
-    Charge la page liste filtrée pour 2024 et renvoie tous les blocs de jeu.
-    """
+    """Récupère les blocs de jeu de la page liste filtrée pour 2024."""
     url = f"https://www.grouvee.com/games/?dateFrom=2024-01-01&dateTo=2024-12-31&page={page_number}"
     print("Fetching:", url)
     try:
@@ -77,14 +75,8 @@ def extract_game_info(block):
 
 def get_game_detail_info(game_url):
     """
-    Accède à la page détail du jeu et récupère les informations du bloc "Game Details" :
-      - Date de sortie
-      - Développeur
-      - Éditeur
-      - Genres
-      - Mode de jeu
-      - Franchise
-      - Popularité
+    Récupère depuis la page détail les informations du bloc "Game Details" :
+      - Date de sortie, Développeur, Éditeur, Genres, Franchise et Mode de jeu (si présent)
     """
     time.sleep(0.1)
     try:
@@ -105,7 +97,7 @@ def get_game_detail_info(game_url):
         "Franchise": "",
         "Popularité": ""
     }
-    # Recherche du tableau "Game Details" dans un bloc stats-box
+    # On cherche le tableau dans le bloc "Game Details"
     stats_boxes = soup.find_all("div", class_="stats-box")
     table = None
     for box in stats_boxes:
@@ -116,31 +108,32 @@ def get_game_detail_info(game_url):
     if table:
         rows = table.find_all("tr")
         for row in rows:
-            cells = row.find_all("td")
-            if len(cells) >= 2:
-                label = cells[0].get_text(strip=True).lower()
-                value = cells[1].get_text(" ", strip=True)
-                if "release date" in label:
-                    details["Date de sortie"] = value
-                elif "developer" in label or "développeur" in label:
-                    details["Développeur"] = value
-                elif "publisher" in label or "éditeur" in label:
-                    details["Éditeur"] = value
-                elif "genre" in label:
-                    details["Genres"] = value
-                elif "franchise" in label:
-                    details["Franchise"] = value
-                elif "mode" in label:
-                    details["Mode de jeu"] = value
+            tds = row.find_all("td")
+            if len(tds) < 2:
+                continue
+            label = tds[0].get_text(strip=True).lower()
+            value = tds[1].get_text(" ", strip=True)
+            if "release date" in label:
+                details["Date de sortie"] = value
+            elif "developer" in label or "développeur" in label:
+                details["Développeur"] = value
+            elif "publisher" in label or "éditeur" in label:
+                details["Éditeur"] = value
+            elif "genre" in label:
+                details["Genres"] = value
+            elif "franchise" in label:
+                details["Franchise"] = value
+            elif "mode" in label:
+                details["Mode de jeu"] = value
     else:
         print("Table 'Game Details' non trouvée pour", game_url)
-    # Récupération de la popularité dans un bloc séparé (si présent)
+    # Extraction de la popularité si présente (dans un bloc séparé)
     popularity_div = soup.find("div", class_="game-popularity")
     details["Popularité"] = popularity_div.get_text(strip=True) if popularity_div else ""
     return details
 
 def main():
-    max_page = 38
+    max_page = 2  # Pour tester avec 2 pages
     all_games = []
     for page_number in range(1, max_page + 1):
         blocks = get_game_blocks(page_number)
@@ -150,7 +143,7 @@ def main():
         page_count = 0
         for block in blocks:
             game = extract_game_info(block)
-            # On ne traite que les jeux dont l'année est "2024"
+            # On ne traite que les jeux dont l'année est exactement "2024"
             if game.get("Année") != "2024":
                 continue
             page_count += 1
@@ -162,22 +155,22 @@ def main():
 
     print(f"Nombre total de jeux 2024 récupérés : {len(all_games)}")
 
-    # Définir les champs pour le CSV final (séparateur point-virgule)
+    # Champs souhaités pour le CSV
     fieldnames = [
         "Titre", "Identifiant unique", "Date de sortie", "Développeur",
         "Éditeur", "Genres", "Mode de jeu", "Franchise", "Note Moyenne",
         "Plateformes", "Popularité"
     ]
-    # Si "Date de sortie" est vide, utiliser l'année (même si ce n'est pas complet)
+    # Si la date de sortie n'est pas trouvée, on peut utiliser l'année (même si cela n'inclut pas le jour et le mois)
     for game in all_games:
         if not game.get("Date de sortie"):
             game["Date de sortie"] = game.get("Année", "")
-        # Supprimer les clés non désirées
-        for key in ["Année"]:
+        # On peut supprimer les clés inutiles
+        for key in ["Année", "Image URL"]:
             if key in game:
                 del game[key]
 
-    csv_filename = "grouvee_2024_games_complete_output.csv"
+    csv_filename = "grouvee_2024_games_details_test.csv"
     with open(csv_filename, "w", newline="", encoding="utf-8") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=";")
         writer.writeheader()
