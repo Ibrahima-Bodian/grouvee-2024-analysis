@@ -181,7 +181,7 @@ Questions à se Poser et Axes d’Analyse
         Comment structurer l’interface pour faciliter l’analyse par des non-spécialistes (responsables marketing, développeurs, etc.) ?
 
     Sur l’organisation du projet et la collaboration :
-        Comment organiser votre code et vos documents sur GitHub pour faciliter la collaboration et le suivi (commits fréquents, branches pour les fonctionnalités, documentation) ?
+        Comment organiser mon code et mes documents sur GitHub pour faciliter la collaboration et le suivi (commits fréquents, branches pour les fonctionnalités, documentation) ?
         Quelles bonnes pratiques de gestion de version et de documentation adopter pour assurer la maintenabilité du projet sur le long terme ?
 
-Ces axes vous permettront non seulement d’approfondir l’analyse des données issues de Grouvee mais aussi de créer un tableau de bord interactif et évolutif. En combinant l’utilisation de Python (avec Pandas et des bibliothèques de visualisation) et PowerBI, vous aurez une approche complète, tant sur le traitement que sur la mise en forme visuelle des résultats. N’oubliez pas de documenter chaque étape sur GitHub pour une traçabilité optimale de votre travail.
+Ces axes me permettront non seulement d’approfondir l’analyse des données issues de Grouvee mais aussi de créer un tableau de bord interactif et évolutif. En combinant l’utilisation de Python (avec Pandas et des bibliothèques de visualisation) et PowerBI, J'aurais une approche complète, tant sur le traitement que sur la mise en forme visuelle des résultats. J’oublie pas de documenter chaque étape sur GitHub pour une traçabilité optimale de mon travail.
