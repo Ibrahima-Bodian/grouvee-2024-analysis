@@ -16,3 +16,9 @@ push an existing repository from the command line
 git remote add origin https://github.com/Ibrahima-Bodian/grouvee-2024-analysis.git
 git branch -M master
 git push -u origin master
+
+
+git add .
+git commit -m "3e dépôt"
+git branch -m master
+git push -u origin master
