@@ -1,31 +1,3 @@
-# grouvee-2024-analysis
-
-create a new repository on the command line
-
-echo "# grouvee-2024-analysis" >> README.md
-git init
-git add README.md
-git commit -m "first commit"
-git branch -M master
-git remote add origin https://github.com/Ibrahima-Bodian/grouvee-2024-analysis.git
-git push -u origin master
-
-
-push an existing repository from the command line
-
-git remote add origin https://github.com/Ibrahima-Bodian/grouvee-2024-analysis.git
-git branch -M master
-git push -u origin master
-
-
-git add .
-git commit -m "3e dépôt"
-git branch -m master
-git push -u origin master
-
-
-
-
 # Rapport d'analyse : Jeux sortis en 2024 (Grouvee)
 
 Ce rapport présente une analyse des jeux vidéo sortis en 2024, basée sur les données collectées sur le site Grouvee. Il a pour but de mieux comprendre les tendances de l'industrie vidéoludique de cette année-là à travers différents indicateurs : notes moyennes, genres populaires, répartition par plateforme, etc.
@@ -66,9 +38,9 @@ Boxplot des notes par genre :
 
 ![Boxplot genres](../images/boxplot.png)
 
-Note moyenne par genre :
+Répartition des jeux par genre :
 
-![Colonnes genres](../images/barres_genres.png)
+![Colonnes genres](../images/jeux_par_genre_treemp.png)
 
 **Analyse :**
 > Certains genres comme les RPG ou les jeux d'aventure obtiennent généralement de meilleures notes. Les genres plus niches montrent une plus grande variabilité.
@@ -77,9 +49,9 @@ Note moyenne par genre :
 
 ## 3. Plateformes et notes
 
-Boxplot des notes par plateforme :
+Distribution des notes individuelles par plateforme :
 
-![Boxplot plateformes](../images/boxplot_plateformes.png)
+![Boxplot plateformes](../images/note_indiv_par_platf.png)
 
 Note moyenne par plateforme :
 
@@ -130,7 +102,7 @@ Nombre de jeux par développeur :
 ![Évolution](../images/jeux_par_mois.png)
 
 **Analyse :**
-> Les mois de février, mars et septembre montrent des pics de sorties. Les notes restent globalement stables avec de légères hausses selon les mois.
+> Les mois de janvier, octobre et decembre montrent des pics de sorties. Les notes restent globalement stables avec de légères hausses selon les mois.
 
 ---
 

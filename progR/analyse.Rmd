@@ -1,11 +1,14 @@
 ---
 title: "Analyse des jeux vidéo 2024 sur Grouvee"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 # Chargement des bibliothèques nécessaires
+#install.packages("ggrepel")
 library(readr)
 library(dplyr)
 library(ggplot2)
@@ -24,20 +27,18 @@ library(cluster)
 library(factoextra)
 library(lubridate)
 library(reshape2)
+library(ggrepel)
 ```
 
 
-# Analyse complète des jeux vidéo 2024 sur Grouvee
-
 ```{r}
 # Chargement des données
-df <- read_delim("../fichiercsv/grouvee_2024_games.csv", delim = ";", locale = locale(encoding = "Latin1"), show_col_types = FALSE)
+df<-read_delim("../fichiercsv/grouvee_2024_games.csv", delim = ";", locale = locale(encoding="Latin1"), show_col_types = FALSE)
 
+# Conversion de la colonne Note Moyenne en numérique
+df$`Note Moyenne`<-as.numeric(df$`Note Moyenne`)
 
-# Conversion explicite de la colonne Note Moyenne en numérique
-df$`Note Moyenne` <- as.numeric(df$`Note Moyenne`)
-
-# Aperçu rapide
+# Aperçu
 glimpse(df)
 
 ```
@@ -48,32 +49,21 @@ glimpse(df)
 # 1. Tendance générale des notes
 # ---------------------------
 # Chargement des données
-df <- read_delim("../fichiercsv/grouvee_2024_games.csv", delim = ";", locale = locale(encoding = "Latin1"), show_col_types = FALSE)
+df <- read_delim("../fichiercsv/grouvee_2024_games.csv",
+                 delim = ";",
+                 locale = locale(encoding = "Latin1"),
+                 col_types = cols(`Note Moyenne` = col_character()))
 
-# Nettoyage : convertir les virgules en points puis transformer en numérique
-df$`Note Moyenne` <- as.numeric(gsub(",", ".", df$`Note Moyenne`))
-
-
-# Filtrer uniquement les jeux notés (note > 0)
+# Nettoyage : transformer les virgules en points et convertir en numérique
+df$`Note Moyenne` <- gsub(",", ".", df$`Note Moyenne`)
+df$`Note Moyenne` <- as.numeric(df$`Note Moyenne`)
 df_notes <- df %>% filter(`Note Moyenne` > 0)
 
-# Courbe de densité des notes
 ggplot(df_notes, aes(x = `Note Moyenne`)) +
   geom_density(fill = "orange", alpha = 0.5, color = "black") +
-  labs(title = "Courbe de densité des notes moyennes", x = "Note Moyenne", y = "Densité") +
+  labs(title = "Courbe de densité des notes moyennes",
+       x = "Note Moyenne", y = "Densité") +
   theme_minimal()
-```
-
-```{r}
-cat("Analyse :
-
-    La courbe présente plusieurs pics de densité, indiquant que les notes se regroupent autour de certaines valeurs spécifiques.
-
-    Les trois principaux pics se situent autour de 2, 3, et 4, ce qui indique une distribution multimodale.
-
-    Cela signifie que les utilisateurs sont partagés : certains jeux sont mal notés, d’autres très bien.
-
-    La distribution n’est pas normale, ce qui peut traduire des expériences utilisateurs très contrastées.")
 ```
 
 
@@ -82,11 +72,11 @@ cat("Analyse :
 # 2. Comparaison des genres
 # ---------------------------
 
-df_genres <- df %>%
+df_genres<-df %>%
   filter(!is.na(Genres) & Genres != "") %>%
   separate_rows(Genres, sep = ",\\s*")
 
-genre_summary <- df_genres %>%
+genre_summary<-df_genres %>%
   filter(`Note Moyenne` > 0) %>%
   group_by(Genres) %>%
   summarise(Note_Moyenne = mean(`Note Moyenne`, na.rm=TRUE), Nombre_jeux = n(), .groups = "drop") %>%
@@ -95,9 +85,27 @@ genre_summary <- df_genres %>%
 # Boxplot par genre
 ggplot(df_genres %>% filter(`Note Moyenne` > 0), aes(x = Genres, y = `Note Moyenne`)) +
   geom_boxplot(fill = "lightgreen") +
-  labs(title = "Boxplot des notes par genre", x = "Genre", y = "Note Moyenne") +
+  labs(title = "                                 Répartition des notes par genre", x = "Genre", y = "Note Moyenne") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+# Nettoyage et préparation des genres
+df_genres <- df %>%
+  filter(!is.na(Genres) & Genres != "") %>%
+  separate_rows(Genres, sep = ",\\s*") %>%
+  group_by(Genres) %>%
+  summarise(Nombre_jeux = n(), .groups = "drop") %>%
+  arrange(desc(Nombre_jeux))
+
+# Treemap sans légende
+ggplot(df_genres, aes(area = Nombre_jeux, fill = Genres, label = paste0(Genres, "\n", Nombre_jeux))) +
+  geom_treemap() +
+  geom_treemap_text(colour = "white", place = "centre", grow = TRUE) +
+  labs(title = "                          Répartition nombre de jeux par genre (Treemap)") +
+  guides(fill = "none") +  # Supprimer la légende
+  theme_minimal()
 ```
 
 
@@ -106,14 +114,14 @@ ggplot(df_genres %>% filter(`Note Moyenne` > 0), aes(x = Genres, y = `Note Moyen
 # 3. Plateformes et notes
 # ---------------------------
 
-df_platforms <- df %>%
+df_platforms<-df %>%
   filter(!is.na(Plateformes) & Plateformes != "") %>%
   separate_rows(Plateformes, sep = ",\\s*")
 
-platform_summary <- df_platforms %>%
+platform_summary<-df_platforms %>%
   filter(`Note Moyenne` > 0) %>%
   group_by(Plateformes) %>%
-  summarise(Note_Moyenne = mean(`Note Moyenne`, na.rm=TRUE), Nombre_jeux = n(), .groups = "drop") %>%
+  summarise(Note_Moyenne=mean(`Note Moyenne`, na.rm=TRUE), Nombre_jeux = n(), .groups = "drop") %>%
   arrange(desc(Note_Moyenne))
 
 # Boxplot par plateforme
@@ -131,7 +139,6 @@ ggplot(platform_summary, aes(x = reorder(Plateformes, -Note_Moyenne), y = Note_M
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
-
 
 
 ```{r clustering-avec-labels, echo=TRUE, message=FALSE, warning=FALSE}
@@ -208,25 +215,45 @@ ggplot(melted_corr, aes(x = Var1, y = Var2, fill = value)) +
 
 
 ```{r}
+# Chargement des données en forçant Note Moyenne comme texte
+df<-read_delim("../fichiercsv/grouvee_2024_games.csv",
+                 delim = ";",
+                 locale = locale(encoding = "Latin1"),
+                 col_types = cols(`Note Moyenne` = col_character()))
+
+# Nettoyage : transformer les virgules en points et convertir en numérique
+df$`Note Moyenne`<-gsub(",", ".", df$`Note Moyenne`)
+df$`Note Moyenne`<-as.numeric(df$`Note Moyenne`)
+df_notes_sep <- df %>%
+  filter(`Note Moyenne` > 0 & !is.na(Plateformes)) %>%
+  separate_rows(Plateformes, sep = ",\\s*")
+
+# 3. Afficher le jitter (notes entre 0 et 5 normalement)
+ggplot(df_notes_sep, aes(x = Plateformes, y = `Note Moyenne`)) +
+  geom_jitter(width = 0.2, alpha = 0.5, color = "darkblue") +
+  labs(title = "                 Répartition des notes individuelles par plateforme",
+       x = "Plateforme", y = "Note Moyenne") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
 # ---------------------------
 # 8. Franchises
 # ---------------------------
 
 # Importer les données avec la colonne "Note Moyenne" en texte
-df <- read_delim("../fichiercsv/grouvee_2024_games.csv", delim = ";", locale = locale(encoding = "Latin1"), col_types = cols(`Note Moyenne` = col_character()), show_col_types = FALSE)
+df<-read_delim("../fichiercsv/grouvee_2024_games.csv", delim = ";", locale = locale(encoding = "Latin1"), col_types = cols(`Note Moyenne` = col_character()), show_col_types = FALSE)
 
 # Correction : Remplacer les virgules par des points et convertir en numérique
-df$`Note Moyenne` <- as.numeric(gsub(",", ".", df$`Note Moyenne`))
+df$`Note Moyenne`<-as.numeric(gsub(",", ".", df$`Note Moyenne`))
 
 # Créer une nouvelle variable "Avec_Franchise" :
 # Si la colonne Franchise est vide ou NA, on considère que le jeu est "Sans Franchise", sinon "Avec Franchise"
-df_franchise <- df %>%
+df_franchise<-df %>%
   mutate(Avec_Franchise = if_else(is.na(Franchise) | Franchise == "", "Sans Franchise", "Avec Franchise")) %>%
   filter(`Note Moyenne` > 0)  # Ne conserver que les jeux notés (> 0)
 
-# Vérification rapide
-str(df$`Note Moyenne`)
-summary(df$`Note Moyenne`)
 
 # Boxplot comparatif des notes selon l'appartenance à une franchise
 ggplot(df_franchise, aes(x = Avec_Franchise, y = `Note Moyenne`)) +
@@ -242,12 +269,9 @@ ggplot(df_franchise, aes(x = Avec_Franchise, y = `Note Moyenne`)) +
 # 9. Régression linéaire
 # ---------------------------
 
-df_reg <- df %>%
+df_reg<-df %>%
   filter(`Note Moyenne` > 0 & !is.na(Plateformes)) %>%
   mutate(nb_plateformes = str_count(Plateformes, ",") + 1)
-
-modele <- lm(`Note Moyenne` ~ nb_plateformes, data = df_reg)
-summary(modele)
 
 # Graphique
 ggplot(df_reg, aes(x = nb_plateformes, y = `Note Moyenne`)) +
@@ -255,10 +279,4 @@ ggplot(df_reg, aes(x = nb_plateformes, y = `Note Moyenne`)) +
   geom_smooth(method = "lm", se = FALSE, color = "red") +
   labs(title = "Régression : Note Moyenne vs Nombre de plateformes") +
   theme_minimal()
-```
-
-
-```{r}
-#Analyse :
-cat("Le graphique montre une légère corrélation positive entre le nombre de plateformes et la note moyenne des jeux. Les jeux disponibles sur plusieurs plateformes tendent à obtenir de meilleures notes, bien que cette tendance reste modérée. Une forte dispersion des données suggère que d'autres facteurs influencent aussi la qualité perçue. Ce résultat indique que la portée multiplateforme peut être un avantage, mais n’est pas un gage de succès.")
 ```
