@@ -277,6 +277,6 @@ df_reg<-df %>%
 ggplot(df_reg, aes(x = nb_plateformes, y = `Note Moyenne`)) +
   geom_point(color = "blue", alpha = 0.6) +
   geom_smooth(method = "lm", se = FALSE, color = "red") +
-  labs(title = "Régression : Note Moyenne vs Nombre de plateformes") +
+  labs(title = "          Régression : Note Moyenne vs Nombre de plateformes") +
   theme_minimal()
 ```

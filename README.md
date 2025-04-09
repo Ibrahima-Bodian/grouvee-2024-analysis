@@ -113,6 +113,11 @@ Comparaison des notes entre jeux avec ou sans franchise :
 
 ![Franchise](./images/noteavecousansfranchise.png)
 
+
+## 9. Régression linéaire
+
+Comparaison Note Moyenne vs Nombre de plateformes
+![Regression](./images/notemoy_vs_nbplatf1.png)
 **Analyse :**
 > Les jeux appartenant à une franchise ont tendance à obtenir de meilleures évaluations. Cela suggère que l'appartenance à un univers connu rassure ou fidélise les joueurs.
 
