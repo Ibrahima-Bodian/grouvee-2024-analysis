@@ -55,7 +55,7 @@ Distribution des notes individuelles par plateforme :
 
 Note moyenne par plateforme :
 
-![Colonnes plateformes](../images/note_moyenne_jeux_par_plateforme.png)
+![Colonnes plateformes](./images/note_moyenne_jeux_par_plateforme.png)
 
 **Analyse :**
 > Les jeux PC et PlayStation tendent à avoir de bonnes évaluations. La variabilité peut indiquer une diversité plus importante dans la qualité des jeux selon la plateforme.
