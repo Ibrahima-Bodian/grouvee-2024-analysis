@@ -31,7 +31,7 @@ library(reshape2)
 
 ```{r}
 # Chargement des données
-df <- read_delim("grouvee_2024_games.csv", delim = ";", locale = locale(encoding = "Latin1"), show_col_types = FALSE)
+df <- read_delim("../fichiercsv/grouvee_2024_games.csv", delim = ";", locale = locale(encoding = "Latin1"), show_col_types = FALSE)
 
 
 # Conversion explicite de la colonne Note Moyenne en numérique
@@ -48,7 +48,7 @@ glimpse(df)
 # 1. Tendance générale des notes
 # ---------------------------
 # Chargement des données
-df <- read_delim("grouvee_2024_games.csv", delim = ";", locale = locale(encoding = "Latin1"), show_col_types = FALSE)
+df <- read_delim("../fichiercsv/grouvee_2024_games.csv", delim = ";", locale = locale(encoding = "Latin1"), show_col_types = FALSE)
 
 # Nettoyage : convertir les virgules en points puis transformer en numérique
 df$`Note Moyenne` <- as.numeric(gsub(",", ".", df$`Note Moyenne`))
@@ -56,18 +56,6 @@ df$`Note Moyenne` <- as.numeric(gsub(",", ".", df$`Note Moyenne`))
 
 # Filtrer uniquement les jeux notés (note > 0)
 df_notes <- df %>% filter(`Note Moyenne` > 0)
-
-# Histogramme de la distribution des notes
-ggplot(df_notes, aes(x = `Note Moyenne`)) +
-  geom_histogram(binwidth = 0.1, fill = "steelblue", color = "white") +
-  labs(title = "Distribution des notes moyennes des jeux", x = "Note Moyenne", y = "Nombre de jeux") +
-  theme_minimal()
-
-# Boxplot des notes valides
-ggplot(df_notes, aes(y = `Note Moyenne`)) +
-  geom_boxplot(fill = "lightblue", outlier.color = "red") +
-  labs(title = "Boxplot des notes moyennes (hors jeux non notés)", y = "Note Moyenne") +
-  theme_minimal()
 
 # Courbe de densité des notes
 ggplot(df_notes, aes(x = `Note Moyenne`)) +
@@ -110,14 +98,6 @@ ggplot(df_genres %>% filter(`Note Moyenne` > 0), aes(x = Genres, y = `Note Moyen
   labs(title = "Boxplot des notes par genre", x = "Genre", y = "Note Moyenne") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-# Barre des moyennes par genre
-ggplot(genre_summary, aes(x = reorder(Genres, -Note_Moyenne), y = Note_Moyenne)) +
-  geom_col(fill = "darkgreen") +
-  geom_text(aes(label = round(Note_Moyenne, 2)), vjust = -0.5) +
-  labs(title = "Note moyenne par genre", x = "Genre", y = "Note Moyenne") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 
@@ -139,15 +119,15 @@ platform_summary <- df_platforms %>%
 # Boxplot par plateforme
 ggplot(df_platforms %>% filter(`Note Moyenne` > 0), aes(x = Plateformes, y = `Note Moyenne`)) +
   geom_boxplot(fill = "lightblue") +
-  labs(title = "Répartition des notes par plateforme", x = "Plateforme", y = "Note Moyenne") +
+  labs(title = "                         Répartition des notes par plateforme", x = "Plateforme", y = "Note Moyenne") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 # Moyenne par plateforme
 ggplot(platform_summary, aes(x = reorder(Plateformes, -Note_Moyenne), y = Note_Moyenne)) +
-  geom_col(fill = "darkorange") +
+  geom_col(fill = "blue") +
   geom_text(aes(label = round(Note_Moyenne, 2)), vjust = -0.5) +
-  labs(title = "Note moyenne par plateforme", x = "Plateforme", y = "Note Moyenne") +
+  labs(title = "                               Note moyenne par plateforme", x = "Plateforme", y = "Note Moyenne") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
@@ -158,13 +138,6 @@ ggplot(platform_summary, aes(x = reorder(Plateformes, -Note_Moyenne), y = Note_M
 # ---------------------------
 # 4. Clustering
 # ---------------------------
-# Charger les packages nécessaires
-library(dplyr)
-library(stringr)
-library(ggplot2)
-library(ggrepel)     # Pour geom_text_repel
-library(factoextra)  # Pour fviz_cluster
-
 # Préparer les données de clustering en gardant la colonne Titre pour les étiquettes
 df_clust_all <- df %>%
   filter(`Note Moyenne` > 0 & !is.na(Plateformes)) %>%
@@ -185,7 +158,7 @@ cluster_plot <- fviz_cluster(
   ellipse.type = "convex",  # Afficher l'enveloppe convexe des clusters
   label  = "none",          # Pas de labels automatiques
   ggtheme = theme_minimal(),
-  main   = "Clustering des jeux"
+  main   = "                             Clustering des jeux"
 )
 
 # Ajouter les étiquettes manuellement avec geom_text_repel pour éviter le chevauchement
@@ -240,7 +213,7 @@ ggplot(melted_corr, aes(x = Var1, y = Var2, fill = value)) +
 # ---------------------------
 
 # Importer les données avec la colonne "Note Moyenne" en texte
-df <- read_delim("grouvee_2024_games.csv", delim = ";", locale = locale(encoding = "Latin1"), col_types = cols(`Note Moyenne` = col_character()), show_col_types = FALSE)
+df <- read_delim("../fichiercsv/grouvee_2024_games.csv", delim = ";", locale = locale(encoding = "Latin1"), col_types = cols(`Note Moyenne` = col_character()), show_col_types = FALSE)
 
 # Correction : Remplacer les virgules par des points et convertir en numérique
 df$`Note Moyenne` <- as.numeric(gsub(",", ".", df$`Note Moyenne`))
