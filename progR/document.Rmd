@@ -1,0 +1,187 @@
+---
+title: "Analyse des jeux vidéo 2024 - Grouvee"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(lubridate)
+```
+
+```{r}
+data <- read.csv("grouvee_2024_games.csv", sep = ";", stringsAsFactors = FALSE, fileEncoding = "latin1")
+head(data, 5)
+
+```
+
+
+```{r}
+# Conversion de la colonne "Date de sortie"
+# Ici, le format est supposé être comme "Feb 20, 2024"
+data$Date.de.sortie <- as.Date(data$Date.de.sortie, format = "%b %d, %Y")
+# Création de colonnes pour le mois et le trimestre
+data <- data %>%
+  mutate(
+    Mois = format(Date.de.sortie, "%b"),
+    Trimestre = paste0("T", quarters(Date.de.sortie))
+  )
+head(data, 5)
+
+```
+
+
+```{r}
+data %>%
+  filter(!is.na(Date.de.sortie)) %>%
+  count(Mois) %>%
+  ggplot(aes(x = Mois, y = n)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(title = "Nombre de jeux par mois de sortie en 2024", x = "Mois", y = "Nombre de jeux") +
+  theme_minimal()
+
+```
+
+
+```{r}
+data %>%
+  mutate(Note.Moyenne = as.numeric(Note.Moyenne)) %>%
+  ggplot(aes(x = Note.Moyenne)) +
+  geom_histogram(bins = 10, fill = "darkgreen", color = "white") +
+  labs(title = "Distribution des notes moyennes", x = "Note Moyenne", y = "Fréquence") +
+  theme_minimal()
+
+```
+
+
+
+```{r}
+data_genre <- data %>%
+  separate_rows(Genres, sep = ",") %>%
+  mutate(Genres = trimws(Genres)) %>%
+  filter(Genres != "")
+data_genre %>%
+  count(Genres, sort = TRUE) %>%
+  ggplot(aes(x = reorder(Genres, n), y = n)) +
+  geom_bar(stat = "identity", fill = "orchid") +
+  coord_flip() +
+  labs(title = "Répartition des jeux par Genre", x = "Genre", y = "Nombre de jeux") +
+  theme_minimal()
+
+```
+
+
+
+
+```{r kpi-cards}
+# Calcul des KPI
+total_games <- nrow(data)
+avg_rating <- round(mean(as.numeric(data$Note.Moyenne), na.rm = TRUE), 2)
+distinct_franchises <- length(unique(data$Franchise[data$Franchise != ""]))
+
+# Création d'un tableau de KPI
+kpi_table <- data.frame(
+  KPI = c("Total de jeux", "Note moyenne", "Franchises distinctes"),
+  Valeur = c(total_games, avg_rating, distinct_franchises)
+)
+
+# Affichage du tableau avec kable
+knitr::kable(kpi_table, caption = "KPI Globaux", format = "html")
+
+```
+
+```{r}
+
+kpi<-"Ce code calcule vos trois indicateurs clés et les présente dans un tableau. Vous pouvez ensuite utiliser ce tableau dans votre rapport RMarkdown pour une visualisation claire et concise des KPI globaux."
+cat(kpi)
+
+```
+
+
+```{r}
+# Assurez-vous d'avoir les packages nécessaires
+library(ggplot2)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+
+# Charger les données
+library(readr)
+
+df <- read_delim("../fichiercsv/grouvee_2024_games.csv", delim = ";", locale = locale(encoding = "ISO-8859-1"))
+# Nettoyer les données (séparer les genres multiples en plusieurs lignes)
+df_clean <- df %>%
+  filter(`Note Moyenne` > 0) %>%  # Exclure les jeux sans note
+  separate_rows(Genres, sep = ",") %>%
+  mutate(Genres = str_trim(Genres))
+
+# Créer le boxplot
+ggplot(df_clean, aes(x = Genres, y = `Note Moyenne`)) +
+  geom_boxplot(fill = "skyblue", outlier.color = "red") +
+  labs(
+    title = "                             Répartition des notes moyennes par Genre",
+    x = "Genre",
+    y = "Note Moyenne"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+
+
+```{r}
+#install.packages("treemapify")  # à faire une seule fois si pas encore installé
+library(treemapify)
+# Charger vos données (adapter le chemin si besoin)
+df <- read_delim("../fichiercsv/grouvee_2024_games.csv", delim = ";", locale = locale(encoding = "Latin1"))
+# Nettoyage et préparation des genres
+df_genres <- df %>%
+  filter(!is.na(Genres) & Genres != "") %>%
+  separate_rows(Genres, sep = ",\\s*") %>%
+  group_by(Genres) %>%
+  summarise(Nombre_jeux = n(), .groups = "drop") %>%
+  arrange(desc(Nombre_jeux))
+
+# Treemap
+ggplot(df_genres, aes(area = Nombre_jeux, fill = Genres, label = paste0(Genres, "\n", Nombre_jeux))) +
+  geom_treemap() +
+  geom_treemap_text(colour = "white", place = "centre", grow = TRUE) +
+  labs(title = "            Répartition des jeux par genre (Treemap)") +
+  theme_minimal()
+```
+
+
+```{r}
+# Charger vos données (adapter le chemin si besoin)
+df <- read_delim("grouvee_2024_games.csv", delim = ";", locale = locale(encoding = "Latin1"))
+
+# Nettoyage et préparation des genres
+df_genres <- df %>%
+  filter(!is.na(Genres) & Genres != "") %>%
+  separate_rows(Genres, sep = ",\\s*") %>%
+  group_by(Genres) %>%
+  summarise(Nombre_jeux = n(), .groups = "drop") %>%
+  arrange(desc(Nombre_jeux))
+
+# Treemap sans légende
+ggplot(df_genres, aes(area = Nombre_jeux, fill = Genres, label = paste0(Genres, "\n", Nombre_jeux))) +
+  geom_treemap() +
+  geom_treemap_text(colour = "white", place = "centre", grow = TRUE) +
+  labs(title = "                          Répartition des jeux par genre (Treemap)") +
+  guides(fill = "none") +  # Supprimer la légende
+  theme_minimal()
+```
+
+
+
+```{r}
+ggplot(df_notes_sep, aes(x = Plateformes, y = `Note Moyenne`)) +
+  geom_boxplot(fill = "lightgreen") +
+  labs(title = "                    Variabilité des notes moyennes par plateforme",
+       x = "Plateforme", y = "Note Moyenne") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
