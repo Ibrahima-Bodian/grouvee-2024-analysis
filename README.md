@@ -15,9 +15,10 @@ Ce rapport présente une analyse des jeux vidéo sortis en 2024, basée sur les 
 
 ## 1. Tendance générale des notes
 
-Distribution des notes moyennes des jeux :
 
-![Distribution](./images/distribution_notes.png)
+KPI :
+
+![KPI](./images/resume.png)
 
 Courbe de densité des notes :
 
