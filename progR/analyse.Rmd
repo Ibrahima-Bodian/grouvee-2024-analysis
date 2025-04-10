@@ -1,9 +1,17 @@
 ---
+author: "Ibrahima Bodian"
 title: "Analyse des jeux vidéo 2024 sur Grouvee"
 output:
-  pdf_document: default
-  html_document: default
+  pdf_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+  html_document:
+    toc: true            # <-- active la table des matières
+    toc_depth: 2         # <-- profondeur des titres (ex: h2, h3)
+    number_sections: true
 ---
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -28,6 +36,7 @@ library(factoextra)
 library(lubridate)
 library(reshape2)
 library(ggrepel)
+library(ggcorrplot)
 ```
 
 
@@ -49,15 +58,12 @@ glimpse(df)
 # 1. Tendance générale des notes
 # ---------------------------
 # Chargement des données
-df <- read_delim("../fichiercsv/grouvee_2024_games.csv",
-                 delim = ";",
-                 locale = locale(encoding = "Latin1"),
-                 col_types = cols(`Note Moyenne` = col_character()))
+df<-read_delim("../fichiercsv/grouvee_2024_games.csv", delim = ";", locale=locale(encoding = "Latin1"), col_types = cols(`Note Moyenne` = col_character()))
 
 # Nettoyage : transformer les virgules en points et convertir en numérique
-df$`Note Moyenne` <- gsub(",", ".", df$`Note Moyenne`)
-df$`Note Moyenne` <- as.numeric(df$`Note Moyenne`)
-df_notes <- df %>% filter(`Note Moyenne` > 0)
+df$`Note Moyenne`<-gsub(",", ".", df$`Note Moyenne`)
+df$`Note Moyenne`<-as.numeric(df$`Note Moyenne`)
+df_notes<-df %>% filter(`Note Moyenne` > 0)
 
 ggplot(df_notes, aes(x = `Note Moyenne`)) +
   geom_density(fill = "orange", alpha = 0.5, color = "black") +
@@ -71,7 +77,6 @@ ggplot(df_notes, aes(x = `Note Moyenne`)) +
 # ---------------------------
 # 2. Comparaison des genres
 # ---------------------------
-
 df_genres<-df %>%
   filter(!is.na(Genres) & Genres != "") %>%
   separate_rows(Genres, sep = ",\\s*")
@@ -92,7 +97,7 @@ ggplot(df_genres %>% filter(`Note Moyenne` > 0), aes(x = Genres, y = `Note Moyen
 
 ```{r}
 # Nettoyage et préparation des genres
-df_genres <- df %>%
+df_genres<-df %>%
   filter(!is.na(Genres) & Genres != "") %>%
   separate_rows(Genres, sep = ",\\s*") %>%
   group_by(Genres) %>%
@@ -113,7 +118,6 @@ ggplot(df_genres, aes(area = Nombre_jeux, fill = Genres, label = paste0(Genres, 
 # ---------------------------
 # 3. Plateformes et notes
 # ---------------------------
-
 df_platforms<-df %>%
   filter(!is.na(Plateformes) & Plateformes != "") %>%
   separate_rows(Plateformes, sep = ",\\s*")
@@ -141,12 +145,12 @@ ggplot(df_platforms %>% filter(`Note Moyenne` > 0), aes(x = Plateformes, y = `No
 # Nombre de jeux par plateforme
 # ---------------------------
 # Séparation des plateformes multiples
-df_platforms <- df %>%
+df_platforms<-df %>%
   filter(!is.na(Plateformes) & Plateformes != "") %>%
   separate_rows(Plateformes, sep = ",\\s*")
 
 # Calcul du nombre de jeux par plateforme
-nb_jeux_par_plateforme <- df_platforms %>%
+nb_jeux_par_plateforme<-df_platforms %>%
   group_by(Plateformes) %>%
   summarise(Nombre_jeux = n(), .groups = "drop") %>%
   filter(Nombre_jeux >= 10) %>%   # <--- filtre ici
@@ -167,19 +171,19 @@ ggplot(nb_jeux_par_plateforme, aes(x = reorder(Plateformes, Nombre_jeux), y = No
 # 4. Clustering
 # ---------------------------
 # Préparer les données de clustering en gardant la colonne Titre pour les étiquettes
-df_clust_all <- df %>%
+df_clust_all<-df %>%
   filter(`Note Moyenne` > 0 & !is.na(Plateformes)) %>%
   mutate(nb_plateformes = str_count(Plateformes, ",") + 1) %>%
   select(Titre, `Note Moyenne`, nb_plateformes)
 
 # Mise à l'échelle des données numériques pour le clustering
-df_clust_scaled <- scale(df_clust_all %>% select(`Note Moyenne`, nb_plateformes))
+df_clust_scaled<-scale(df_clust_all %>% select(`Note Moyenne`, nb_plateformes))
 
 # Exécuter le clustering k-means avec 3 clusters
-kmeans_result <- kmeans(df_clust_scaled, centers = 3, nstart = 25)
+kmeans_result<-kmeans(df_clust_scaled, centers = 3, nstart = 25)
 
 # Visualisation de base du clustering avec fviz_cluster
-cluster_plot <- fviz_cluster(
+cluster_plot<-fviz_cluster(
   object = kmeans_result,
   data   = df_clust_scaled,
   geom   = "point",         # Tracer les points
@@ -205,22 +209,14 @@ cluster_plot +
 
 ```
 
+
 ```{r}
 # ---------------------------
-# 4. Clustering
+# 5. Corrélation
 # ---------------------------
-# Installation si nécessaire
-# install.packages("ggcorrplot")
+set.seed(123)
 
-library(ggcorrplot)
-library(dplyr)
-
-# Vérifie d’abord les noms exacts dans ton dataset
-names(df)
-
-set.seed(123)  # Pour des résultats reproductibles
-
-df_filtered <- df %>%
+df_filtered<-df %>%
   filter(`Note Moyenne` > 0) %>%
   mutate(
     `Nombre Evaluations` = sample(10:1000, nrow(.), replace = TRUE),
@@ -229,15 +225,12 @@ df_filtered <- df %>%
   )
 
 
-
-
-# Suppose que les bonnes colonnes sont celles-ci :
-df_corr <- df_filtered %>%
+df_corr<-df_filtered %>%
   select(`Note Moyenne`, `Nombre Evaluations`, `Temps de jeu`, Popularite) %>%
   mutate(across(everything(), as.numeric)) %>%
   na.omit()
 
-cor_matrix <- cor(df_corr)
+cor_matrix<-cor(df_corr)
 
 ggcorrplot(cor_matrix,
            method = "circle",
@@ -246,111 +239,13 @@ ggcorrplot(cor_matrix,
            colors = c("blue", "white", "red"),
            title = "Corrélations entre les métriques de jeux",
            ggtheme = theme_minimal())
-
-```
-
-```{r}
-# Ajouter les titres aux données avec leurs coordonnées PCA
-pca_coords <- as.data.frame(res_pca$x[, 1:2])
-pca_coords$Titre <- df_clust_all$Titre
-pca_coords$cluster <- as.factor(kmeans_res$cluster)
-
-# Choisir quelques jeux à étiqueter (par ex. les 5 meilleurs et 5 pires)
-top_bottom_titles <- df_clust_all %>%
-  arrange(`Note Moyenne`) %>%
-  slice_head(n = 5) %>%
-  bind_rows(df_clust_all %>% arrange(desc(`Note Moyenne`)) %>% slice_head(n = 5)) %>%
-  pull(Titre)
-
-# Graphique avec quelques étiquettes
-fviz_cluster(
-  object = kmeans_res,
-  data = df_scaled,
-  geom = "point",
-  ellipse.type = "convex",
-  palette = "jco",
-  ggtheme = theme_minimal(),
-  main = "Clustering des jeux (ACP + K-means)"
-) + 
-  ggrepel::geom_text_repel(
-    data = subset(pca_coords, Titre %in% top_bottom_titles),
-    aes(x = PC1, y = PC2, label = Titre),
-    size = 3, color = "black"
-  )
-
-
-# Associer les clusters aux titres
-df_clusters_summary <- df_clust_all %>%
-  mutate(cluster = kmeans_res$cluster) %>%
-  arrange(cluster, desc(`Note Moyenne`)) %>%
-  group_by(cluster) %>%
-  slice_head(n = 5) %>% # Top 5 par cluster
-  ungroup()
-
-# Afficher un petit tableau
-knitr::kable(df_clusters_summary, caption = "Exemples de jeux par cluster (top 5 de chaque)")
-
 ```
 
 
 
 ```{r}
 # ---------------------------
-# 5. Corrélation
-# ---------------------------
-
-# Filtrer les jeux notés (Note Moyenne > 0) et extraire nb_plateformes
-df_corr <- df %>%
-  filter(`Note Moyenne` > 0 & !is.na(Plateformes)) %>%
-  mutate(nb_plateformes = str_count(Plateformes, ",") + 1) %>%
-  select(`Note Moyenne`, nb_plateformes)
-
-# Calcul de la matrice de corrélation (seulement 2 variables ici)
-cor_matrix <- cor(df_corr, use = "complete.obs")
-
-# Transformation de la matrice de corrélation au format long
-melted_corr <- melt(cor_matrix)
-
-# Création de la heatmap
-ggplot(melted_corr, aes(x = Var1, y = Var2, fill = value)) +
-  geom_tile() +
-  geom_text(aes(label = round(value, 2)), color = "black") + # Pour afficher la valeur numérique
-  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
-  labs(
-    title = "Matrice de corrélation",
-    x = NULL, 
-    y = NULL
-  ) +
-  theme_minimal()
-```
-
-
-```{r}
-# Chargement des données en forçant Note Moyenne comme texte
-df<-read_delim("../fichiercsv/grouvee_2024_games.csv",
-                 delim = ";",
-                 locale = locale(encoding = "Latin1"),
-                 col_types = cols(`Note Moyenne` = col_character()))
-
-# Nettoyage : transformer les virgules en points et convertir en numérique
-df$`Note Moyenne`<-gsub(",", ".", df$`Note Moyenne`)
-df$`Note Moyenne`<-as.numeric(df$`Note Moyenne`)
-df_notes_sep <- df %>%
-  filter(`Note Moyenne` > 0 & !is.na(Plateformes)) %>%
-  separate_rows(Plateformes, sep = ",\\s*")
-
-# 3. Afficher le jitter (notes entre 0 et 5 normalement)
-ggplot(df_notes_sep, aes(x = Plateformes, y = `Note Moyenne`)) +
-  geom_jitter(width = 0.2, alpha = 0.5, color = "darkblue") +
-  labs(title = "                 Répartition des notes individuelles par plateforme",
-       x = "Plateforme", y = "Note Moyenne") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
-
-```{r}
-# ---------------------------
-# 8. Franchises
+# 6. Franchises
 # ---------------------------
 
 # Importer les données avec la colonne "Note Moyenne" en texte
@@ -377,7 +272,7 @@ ggplot(df_franchise, aes(x = Avec_Franchise, y = `Note Moyenne`)) +
 
 ```{r}
 # ---------------------------
-# 9. Régression linéaire
+# 7. Régression linéaire
 # ---------------------------
 
 df_reg<-df %>%

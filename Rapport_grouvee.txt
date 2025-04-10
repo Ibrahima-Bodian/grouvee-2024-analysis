@@ -1,0 +1,83 @@
+					Ibrahima Bodian
+
+========================
+Rapport de Travail : Analyse des jeux vidéo Grouvee (2024)
+========================
+
+1. PRÉREQUIS TECHNIQUES (ENVIRONNEMENT ET PACKAGES)
+----------------------------------------------------
+Langages utilisés :
+- Python : pour l'extraction des données (web scraping)
+- R : pour l’analyse statistique et la visualisation
+- Power BI : pour la visualisation
+
+Packages Python requis :
+- requests
+- beautifulsoup4
+- re (regex, intégré)
+- csv (intégré)
+- time (intégré)
+- urllib3
+
+Commande d'installation :
+pip install requests beautifulsoup4
+
+Packages R requis :
+- readr
+- dplyr
+- ggplot2
+- tidyr
+- stringr
+- treemapify
+- forcats
+- scales
+- cluster
+- factoextra
+- lubridate
+- reshape2
+- ggrepel
+- ggcorrplot
+
+2. ÉTAPES DE TRAVAIL
+---------------------
+a. Extraction des données
+- Un script Python a été développé pour parcourir toutes les pages de Grouvee (filtrées pour l’année 2024).
+- Pour chaque jeu listé, les informations de base (titre, plateformes, note, etc.) ont été extraites.
+- Ensuite, une requête a été envoyée vers la page de chaque jeu pour récupérer les détails comme :
+    - Date de sortie
+    - Développeur, Éditeur
+    - Genre
+    - Franchise
+    - Note moyenne
+    - Plateformes
+- Le tout a été exporté dans un fichier CSV : grouvee_2024_games.csv
+
+b. Nettoyage et transformation
+- Le fichier CSV a été nettoyé d'abord sur excel, puis Power BI.
+- Conversion des notes (ex: "4,5") en format numérique ("4.5").
+- Nettoyage des doublons, des champs vides, et transformation des colonnes multi-valeurs (ex : genres ou plateformes multiples séparées en lignes).
+- Adaptation des formats de titres de jeux(avec des jeux en chinois ou avec des caractères non français/anglais) 
+
+c. Analyse et visualisation dans RMarkdown
+- Création de plusieurs visualisations :
+    - Distribution et densité des notes
+    - Boxplots et jitter plots par genre, plateforme, franchise
+    - Treemaps pour les genres les plus fréquents
+    - Clustering (K-means avec PCA)
+    - Corrélations entre métriques simulées (Popularité, Temps de jeu, etc.)
+    - Régressions linéaires
+
+d. Export des graphiques
+- Les graphiques ont été sauvegardés dans un dossier `/images` pour être intégrés au rapport RMarkdown et dans le `README.md`.
+
+e. Versionning Git et Publication
+- Initialisation d’un dépôt Git
+- Ajout et commit des fichiers de données, codes et analyses
+- Push vers GitHub
+- Ajout des visualisations dans `README.md` pour une présentation interactive
+
+3. REMARQUES COMPLÉMENTAIRES
+-----------------------------
+- Le scraping est sensible aux modifications du site source. Une surveillance ou mise à jour du script peut être nécessaire.
+- Certains champs comme la popularité ou le nombre d’évaluations ont été simulés à partir des données disponibles pour enrichir l’analyse.
+
