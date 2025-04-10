@@ -124,22 +124,43 @@ platform_summary<-df_platforms %>%
   summarise(Note_Moyenne=mean(`Note Moyenne`, na.rm=TRUE), Nombre_jeux = n(), .groups = "drop") %>%
   arrange(desc(Note_Moyenne))
 
-# Boxplot par plateforme
 ggplot(df_platforms %>% filter(`Note Moyenne` > 0), aes(x = Plateformes, y = `Note Moyenne`)) +
-  geom_boxplot(fill = "lightblue") +
-  labs(title = "                         Répartition des notes par plateforme", x = "Plateforme", y = "Note Moyenne") +
+  geom_jitter(width = 0.2, alpha = 0.4, color = "darkblue") +
+  stat_summary(fun = mean, geom = "line", aes(group = 1), color = "red", linewidth = 1) +
+  labs(title = "                         Tendance des notes moyennes par plateforme",
+       x = "Plateforme", y = "Note Moyenne") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-# Moyenne par plateforme
-ggplot(platform_summary, aes(x = reorder(Plateformes, -Note_Moyenne), y = Note_Moyenne)) +
-  geom_col(fill = "blue") +
-  geom_text(aes(label = round(Note_Moyenne, 2)), vjust = -0.5) +
-  labs(title = "                               Note moyenne par plateforme", x = "Plateforme", y = "Note Moyenne") +
+```
+
+
+
+```{r}
+# ---------------------------
+# Nombre de jeux par plateforme
+# ---------------------------
+# Séparation des plateformes multiples
+df_platforms <- df %>%
+  filter(!is.na(Plateformes) & Plateformes != "") %>%
+  separate_rows(Plateformes, sep = ",\\s*")
+
+# Calcul du nombre de jeux par plateforme
+nb_jeux_par_plateforme <- df_platforms %>%
+  group_by(Plateformes) %>%
+  summarise(Nombre_jeux = n(), .groups = "drop") %>%
+  filter(Nombre_jeux >= 10) %>%   # <--- filtre ici
+  arrange(Nombre_jeux)
+
+# Graphique
+ggplot(nb_jeux_par_plateforme, aes(x = reorder(Plateformes, Nombre_jeux), y = Nombre_jeux)) +
+  geom_col(fill = "skyblue") +
+  geom_text(aes(label = Nombre_jeux), vjust = -0.3, size = 3) +
+  labs(title = "                                           Nombre de jeux par plateforme",
+       x = "Plateforme", y = "Nombre de jeux") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
-
 
 ```{r clustering-avec-labels, echo=TRUE, message=FALSE, warning=FALSE}
 # ---------------------------
@@ -179,6 +200,96 @@ cluster_plot +
     size = 2,         # Taille du texte
     max.overlaps = 20 # Limite le chevauchement des labels
   )
+
+
+
+```
+
+```{r}
+# ---------------------------
+# 4. Clustering
+# ---------------------------
+# Installation si nécessaire
+# install.packages("ggcorrplot")
+
+library(ggcorrplot)
+library(dplyr)
+
+# Vérifie d’abord les noms exacts dans ton dataset
+names(df)
+
+set.seed(123)  # Pour des résultats reproductibles
+
+df_filtered <- df %>%
+  filter(`Note Moyenne` > 0) %>%
+  mutate(
+    `Nombre Evaluations` = sample(10:1000, nrow(.), replace = TRUE),
+    `Temps de jeu` = round(runif(nrow(.), 1, 100), 1),
+    Popularite = round(`Note Moyenne` * `Nombre Evaluations`)
+  )
+
+
+
+
+# Suppose que les bonnes colonnes sont celles-ci :
+df_corr <- df_filtered %>%
+  select(`Note Moyenne`, `Nombre Evaluations`, `Temps de jeu`, Popularite) %>%
+  mutate(across(everything(), as.numeric)) %>%
+  na.omit()
+
+cor_matrix <- cor(df_corr)
+
+ggcorrplot(cor_matrix,
+           method = "circle",
+           type = "lower",
+           lab = TRUE,
+           colors = c("blue", "white", "red"),
+           title = "Corrélations entre les métriques de jeux",
+           ggtheme = theme_minimal())
+
+```
+
+```{r}
+# Ajouter les titres aux données avec leurs coordonnées PCA
+pca_coords <- as.data.frame(res_pca$x[, 1:2])
+pca_coords$Titre <- df_clust_all$Titre
+pca_coords$cluster <- as.factor(kmeans_res$cluster)
+
+# Choisir quelques jeux à étiqueter (par ex. les 5 meilleurs et 5 pires)
+top_bottom_titles <- df_clust_all %>%
+  arrange(`Note Moyenne`) %>%
+  slice_head(n = 5) %>%
+  bind_rows(df_clust_all %>% arrange(desc(`Note Moyenne`)) %>% slice_head(n = 5)) %>%
+  pull(Titre)
+
+# Graphique avec quelques étiquettes
+fviz_cluster(
+  object = kmeans_res,
+  data = df_scaled,
+  geom = "point",
+  ellipse.type = "convex",
+  palette = "jco",
+  ggtheme = theme_minimal(),
+  main = "Clustering des jeux (ACP + K-means)"
+) + 
+  ggrepel::geom_text_repel(
+    data = subset(pca_coords, Titre %in% top_bottom_titles),
+    aes(x = PC1, y = PC2, label = Titre),
+    size = 3, color = "black"
+  )
+
+
+# Associer les clusters aux titres
+df_clusters_summary <- df_clust_all %>%
+  mutate(cluster = kmeans_res$cluster) %>%
+  arrange(cluster, desc(`Note Moyenne`)) %>%
+  group_by(cluster) %>%
+  slice_head(n = 5) %>% # Top 5 par cluster
+  ungroup()
+
+# Afficher un petit tableau
+knitr::kable(df_clusters_summary, caption = "Exemples de jeux par cluster (top 5 de chaque)")
+
 ```
 
 

@@ -22,6 +22,9 @@ KPI :
 
 Courbe de densité des notes :
 
+**Analyse :** 
+> Sur les 1668 jeux analysés, la note moyenne globale est de 3,20 avec 316 franchises distinctes identifiées. La production mensuelle de jeux varie, avec un pic en janvier, mais les mois les plus prolifiques ne sont pas nécessairement ceux où la note moyenne est la plus élevée.
+
 ![Densité](./images/courbe_de_densite.png)
 
 Boxplot général des notes moyennes :
@@ -29,8 +32,7 @@ Boxplot général des notes moyennes :
 ![Boxplot](./images/rep_glob_des_notes_moy.png)
 
 **Analyse :**
-> La majorité des jeux obtiennent des notes comprises entre 3 et 4.5. On note une légère asymétrie vers les hautes valeurs, traduisant une tendance globale positive des utilisateurs.
-
+> Les notes moyennes des jeux sont principalement concentrées entre 2 et 4, comme le montre la courbe de densité et le boxplot. Le tableau de bord récapitulatif confirme cette tendance avec une note moyenne globale de 3,20 sur 1668 jeux, et une variation mensuelle assez stable.
 ---
 
 ## 2. Comparaison des genres
@@ -44,33 +46,32 @@ Répartition des jeux par genre :
 ![Colonnes genres](./images/jeux_par_genre_treemp.png)
 
 **Analyse :**
-> Certains genres comme les RPG ou les jeux d'aventure obtiennent généralement de meilleures notes. Les genres plus niches montrent une plus grande variabilité.
+> Les genres les plus populaires en termes de volume sont Adventure, Action et Simulation, chacun regroupant près de 200 jeux. En revanche, les notes moyennes varient fortement selon les genres, avec certains comme Platformer ou Visual Novel montrant des tendances plus homogènes, tandis que d'autres présentent une forte dispersion, révélant des niveaux de qualité hétérogènes.
 
 ---
 
 ## 3. Plateformes et notes
 
-Distribution des notes individuelles par plateforme :
-
-![Boxplot plateformes](./images/note_indiv_par_platf.png)
-
 Note moyenne par plateforme :
 
 ![Colonnes plateformes](./images/note_moyenne_jeux_par_plateforme.png)
 
-**Analyse :**
-> Les jeux PC et PlayStation tendent à avoir de bonnes évaluations. La variabilité peut indiquer une diversité plus importante dans la qualité des jeux selon la plateforme.
+## 3.1 Fréquences 
+Nombre de plateformes par jeux
+![Graphique domination plateforme](./images/nbjeux_par_plateforme.png)
 
+**Analyse :**
+> Le nombre de jeux varie fortement selon les plateformes, avec une **domination écrasante du PC**, suivi des consoles modernes comme la **Nintendo Switch** et les **PlayStation**. En revanche, on constate une forte concentration des notes autour de 3 à 4 pour la plupart des plateformes, avec une moyenne légèrement plus élevée sur des consoles comme Game Boy ou Xbox
 ---
 
 ## 4. Clustering des jeux
 
 Clustering basé sur la note moyenne et le nombre de plateformes :
 
-![Clustering](./images/clustering.png)
+![Clustering](./images/cluster.png)
 
 **Analyse :**
-> Trois groupes se dessinent : (1) des jeux peu notés, (2) jeux multi-plateformes avec notes moyennes, et (3) jeux très bien notés, parfois exclusifs.
+> Trois profils de jeux distincts : les jeux multi-plateformes bien notés (cluster 3), les jeux peu notés souvent sur peu de plateformes (cluster 1), et un groupe intermédiaire modérément bien noté et peu distribué (cluster 2).
 
 ---
 
@@ -81,22 +82,11 @@ Matrice de corrélation entre note moyenne et nombre de plateformes :
 ![Corrélation](./images/correlation.png)
 
 **Analyse :**
-> La corrélation est faible mais positive (~0.12) : les jeux disponibles sur plus de plateformes ont tendance à obtenir légèrement de meilleures notes.
+> La popularité d’un jeu est fortement liée au nombre d’évaluations reçues, avec une corrélation de 0.87. Une relation modérée existe aussi entre la popularité et la note moyenne, suggérant que les jeux mieux notés attirent davantage d’intérêt.
 
 ---
 
-## 6. Fréquence développeurs
-
-Nombre de jeux par développeur :
-
-![Développeurs](./images//dev_freq.png)
-
-**Analyse :**
-> Quelques développeurs se démarquent par leur productivité. On pourra aller plus loin en croisant avec la qualité moyenne de leurs jeux.
-
----
-
-## 7. Évolution temporelle
+## 6. Évolution temporelle
 
 Évolution mensuelle du nombre de jeux et de la note moyenne :
 
@@ -107,19 +97,19 @@ Nombre de jeux par développeur :
 
 ---
 
-## 8. Franchises
+## 7. Franchises
 
 Comparaison des notes entre jeux avec ou sans franchise :
 
 ![Franchise](./images/noteavecousansfranchise.png)
 
 
-## 9. Régression linéaire
+## 8. Régression linéaire
 
 Comparaison Note Moyenne vs Nombre de plateformes
 ![Regression](./images/notemoy_vs_nbplatf1.png)
 **Analyse :**
-> Les jeux appartenant à une franchise ont tendance à obtenir de meilleures évaluations. Cela suggère que l'appartenance à un univers connu rassure ou fidélise les joueurs.
+> Les jeux issus d'une franchise tendent à obtenir des notes légèrement plus élevées que ceux qui n'en ont pas. D'ailleurs, plus un jeu est disponible sur un grand nombre de plateformes, plus sa note moyenne semble légèrement augmenter, suggérant une corrélation positive modérée.
 
 ---
 
